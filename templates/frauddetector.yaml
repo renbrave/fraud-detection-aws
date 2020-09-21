@@ -1,25 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 'Amazon Fraud Detector integrations'
-Parameters:
-  StackVersion:
-    Description: 'CloudFormation Stack version.
-
-      Use ''release'' version unless you are customizing the
-
-      CloudFormation templates and solution artifacts.
-
-      '
-    Type: String
-    Default: release
-    AllowedValues:
-    - release
-    - development
-Mappings:
-  BlogS3BucketName:
-    development:
-      Prefix: fraud-detector-blog-assets
-    release:
-      Prefix: fraud-detector-blog-assets
+Description: 'Amazon Fraud Detector template'
 Resources:
   TrainingBucket:
     Type: AWS::S3::Bucket
@@ -48,8 +28,8 @@ Resources:
   BasicNotebookInstance:
     Type: AWS::SageMaker::NotebookInstance
     Properties:
-      InstanceType: ml.t3.medium
-      NotebookInstanceName: FraudDetectionNotebookInstance
+      InstanceType: ml.m5.2xlarge
+      NotebookInstanceName: FraudDetectorNotebook
       RoleArn:
         Fn::GetAtt:
         - NotebookInstanceExecutionRole
@@ -71,8 +51,7 @@ Resources:
       OnCreate:
       - Content:
           Fn::Base64:
-            Fn::Sub:
-            - 'set -e
+            Fn::Sub: 'set -e
 
               # perform following actions as ec2-user
 
@@ -82,8 +61,7 @@ Resources:
 
               # copy source files
 
-              aws s3 sync s3://${BlogS3BucketNamePrefix}/notebooks/
-              .
+              git clone https://github.com/renbrave/fraud-detection-aws.git .
 
               # set environment variables via .env file
 
@@ -100,11 +78,6 @@ Resources:
               EOF
 
               '
-            - BlogS3BucketNamePrefix:
-                Fn::FindInMap:
-                - BlogS3BucketName
-                - Ref: StackVersion
-                - Prefix
       OnStart:
       - Content:
           Fn::Base64:
@@ -146,6 +119,7 @@ Resources:
           Principal:
             Service:
             - sagemaker.amazonaws.com
+            - frauddetector.amazonaws.com
           Action:
           - sts:AssumeRole
   NotebookInstanceIAMPolicy:
@@ -155,28 +129,6 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-        - Effect: Allow
-          Action:
-          - s3:ListBucket
-          Resource:
-          - Fn::Sub:
-            - arn:aws:s3:::${BlogS3BucketNamePrefix}-${AWS::Region}
-            - BlogS3BucketNamePrefix:
-                Fn::FindInMap:
-                - BlogS3BucketName
-                - Ref: StackVersion
-                - Prefix
-        - Effect: Allow
-          Action:
-          - s3:GetObject
-          Resource:
-          - Fn::Sub:
-            - arn:aws:s3:::${BlogS3BucketNamePrefix}-${AWS::Region}/*
-            - BlogS3BucketNamePrefix:
-                Fn::FindInMap:
-                - BlogS3BucketName
-                - Ref: StackVersion
-                - Prefix
         - Effect: Allow
           Action:
           - s3:GetBucketLocation
@@ -258,6 +210,31 @@ Resources:
           - Fn::GetAtt:
             - NotebookInstanceExecutionRole
             - Arn
+        - Effect: Allow
+          Action:
+          - frauddetector:*
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - s3:ListAllMyBuckets
+          - s3:GetBucketLocation
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - sagemaker:ListEndpoints
+          - sagemaker:DescribeEndpoint
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - iam:ListRoles
+          Resource: '*'
+        - Effect: Allow
+          Action:
+          - iam:PassRole
+          Resource: '*'
+          Condition:
+            StringEquals:
+              iam:PassedToService: frauddetector.amazonaws.com
       Roles:
       - Ref: NotebookInstanceExecutionRole
     Metadata:
@@ -270,4 +247,4 @@ Outputs:
   SageMakerNotebook:
     Description: Opens the Jupyter notebook to get started with model training
     Value:
-      Fn::Sub: https://frauddetectionnotebookinstance.notebook.${AWS::Region}.sagemaker.aws/notebooks/source/notebooks/sagemaker_fraud_detection.ipynb
+      Fn::Sub: https://frauddetectionnotebookinstance.notebook.${AWS::Region}.sagemaker.aws/notebooks/source/notebooks/fraud_detection_poc.ipynb
