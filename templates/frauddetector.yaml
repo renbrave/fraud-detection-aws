@@ -131,4 +131,4 @@ Outputs:
   SageMakerNotebook:
     Description: Opens the Jupyter notebook to get started with model training
     Value:
-      Fn::Sub: https://frauddetectionnotebookinstance.notebook.${AWS::Region}.sagemaker.aws/notebooks/fraud-detection-aws/notebooks/fraud_model_combination.ipynb
+      Fn::Sub: https://frauddetectionnotebookinstance.notebook.${AWS::Region}.sagemaker.aws/notebooks/fraud-detection-aws/notebooks/model_combination.ipynb

@@ -6,7 +6,7 @@ The 13% of those companies had losses over $50 million and only 56% of them carr
 
 These figures are indeed alarming, therefore according to Gartner, by 2023, 30% of banking and electronic commerce institutions will include, as a critical requirement, the fraud detection capabilities of providers in more than 75% RFPs, which represents an increase of 25% compared to today.
 
-##What is AWS doing to help the customers in the anti-fraud battle?
+## What is AWS doing to help the customers in the anti-fraud battle?
 
 On the solutions side, we have two good candidates:
 
@@ -22,7 +22,7 @@ An important feature of Amazon Fraud Detector is that it allows the customer to 
 It also allows you to combine several models in each transaction and consider each result in the outcome rules. 
 All of this happens in a matter of milliseconds so that it can be integrated into an online approval workflow. We achieved 160 TPS out of the box in our tests.
 
-##Get Started
+## Get Started
 
 If you want to test the solution yourself, just deploy the next CloudFormation template and click on the Jupyter notebook link in the Outputs tab.
 
